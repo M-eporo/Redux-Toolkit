@@ -1,0 +1,104 @@
+Redux Toolkitは以下の構造を使用：
+  Slice) 状態とreducersを管理する単位
+  Sliceは、Redux Toolkitで状態管理を簡単にするための単位。
+  各Sliceは、以下を含みます：
+    a)状態（State）: その機能の状態データ
+    b)アクション（Actions）: 状態を変更するための関数
+    c)リデューサー（Reducers）: 状態変更のロジック
+
+
+  Store) 全ての状態を格納するオブジェクト
+  Reduxの「状態」を一元管理する場所。
+  各SliceのReducerを統合し、Reactコンポーネントで使用可能にする。
+
+  actionとは) 状態を変更するための "指示書" のようなもの。これは単なるオブジェクトで、次のような構造：
+    {
+      type: "ACTION_TYPE",
+      payload: { /* 状態変更に必要なデータ */ }
+    }
+
+    type:
+      アクションの種類を識別する文字列。
+      例えば、"user/login" や "user/logout" など。
+      Redux のルールでは必須。
+    payload:
+      状態変更に必要な追加データを格納。
+      必須ではありませんが、多くの場合含まれる。
+
+    // ログイン時のアクションオブジェクト
+      const loginAction = {
+        type: "user/login", 
+        payload: { id: 1, name: "John Doe" } // 状態変更に必要なデータ
+      };
+
+    // ログアウト時のアクションオブジェクト
+      const logoutAction = {
+        type: "user/logout"
+      };
+
+    // リデューサー (reducer) と action の関係
+      リデューサーは、現在の状態 (state) とアクション (action) を受け取り、次の状態を返す関数
+      const userSlice = createSlice({
+        name: "user",
+        initialState: { user: null },
+        reducers: {
+          login: (state, action) => {
+            state.user = action.payload; // payload の内容で状態を更新
+          },
+          logout: (state) => {
+            state.user = null; // 状態をリセット
+          },
+        },
+      });
+
+    // ログインの流れ
+      1.アクションをディスパッチする。
+        store.dispatch(login({ id: 1, name: "John Doe" }));
+
+      2.アクションオブジェクトが自動生成される：
+        {
+          type: "user/login",
+          payload: { id: 1, name: "John Doe" }
+        }
+      3.リデューサーがこのアクションを受け取り、state.user を action.payload の値で更新：
+        state.user = { id: 1, name: "John Doe" };
+
+    // ログアウトの流れ
+      1.アクションをディスパッチする。
+        store.dispatch(logout());
+      
+      2.アクションオブジェクトが自動生成される：
+        {
+          ype: "user/logout"
+        }
+
+      3.リデューサーがこのアクションを受け取り、state.user を null にリセット：
+        state.user = null;
+
+  Provider): ReduxストアをReactアプリに提供するためのコンポーネント
+
+1)appフォルダー作成
+　hooks.tsとstore.ts作成
+  --- hooks.ts ---
+    import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+    import type { RootState, AppDispatch } from "./store";
+    export const useAppDispatch: () => AppDispatch = useDispatch;
+    export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+  --- store.ts ---
+    import { configureStore } from "@reduxjs/toolkit";
+    import counterReducer from "../features/counter/counterSlice";
+    import authReducer from "../features/auth/authSlice";
+    export const store = configureStore({
+      reducer: {
+        //複数のReducerをここに追加可能
+        counter: counterReducer,
+        auth: authReducer,
+      },
+    });
+    export type RootState = ReturnType<typeof store.getState>;
+    export type AppDispatch = typeof store.dispatch;
+2)featuresフォルダー作成
+　各スライスを格納するフォルダーと、~Slice.tsファイルを作成
+3)main.tsxに,
+  <Provider store={store}></Provider>
+  を追加。
