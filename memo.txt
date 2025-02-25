@@ -1,3 +1,7 @@
+npm install @redux/toolkit
+npm install react-redux
+npm install @types/react-redux
+
 Redux Toolkitは以下の構造を使用：
   Slice) 状態とreducersを管理する単位
   Sliceは、Redux Toolkitで状態管理を簡単にするための単位。
